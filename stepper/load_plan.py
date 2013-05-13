@@ -2,10 +2,35 @@
 Load Plan generators
 '''
 import math
+import re
+
+MULTIPLIERS = {
+    'h': 3600,
+    'm': 60,
+    's': 1,
+}
+
+
+def normalize_time(duration, multiplier):
+    if multiplier:
+        if multiplier in MULTIPLIERS:
+            return int(duration) * MULTIPLIERS[multiplier]
+        else:
+            raise RuntimeError('No such multiplier: %s', multiplier)
+    else:
+        return int(duration)
 
 
 class ConstLoadPlan(object):
     '''Load plan with constant load'''
+
+    TEMPLATE = re.compile('(\d+),\s*(\d+)([dhms])')
+
+    @staticmethod
+    def create(config):
+        rps, duration, multiplier = ConstLoadPlan.TEMPLATE.search(config).groups()
+        return ConstLoadPlan(int(rps), normalize_time(duration, multiplier))
+
     def __init__(self, rps, duration):
         self.rps = rps
         self.duration = duration
@@ -28,6 +53,14 @@ class ConstLoadPlan(object):
 
 class LineLoadPlan(object):
     '''Load plan with linear load'''
+
+    TEMPLATE = re.compile('(\d+),\s*(\d+),\s*(\d+)([dhms])')
+
+    @staticmethod
+    def create(config):
+        minrps, maxrps, duration, multiplier = LineLoadPlan.TEMPLATE.search(config).groups()
+        return LineLoadPlan(int(minrps), int(maxrps), normalize_time(duration, multiplier))
+
     def __init__(self, minrps, maxrps, duration):
         self.minrps = minrps
         self.maxrps = maxrps
@@ -78,7 +111,23 @@ class CompositeLoadPlan(object):
     def duration(self):
         return sum(step.duration for step in self.steps)
 
+PLANS = {
+    'line': LineLoadPlan,
+    'const': ConstLoadPlan,
+}
 
-def create(config):
+
+def create_load_plan(config):
+    load_type, params = config.split('(')
+    if load_type in PLANS:
+        return PLANS[load_type].create(params)
+    else:
+        raise NotImplemented('No such load type implemented: %s', load_type)
+
+
+def create(rps_schedule):
     '''Load Plan factory method'''
-    return LineLoadPlan(0, 10, 10)
+    if len(rps_schedule) > 1:
+        return CompositeLoadPlan([create_load_plan(config) for config in rps_schedule])
+    else:
+        return create_load_plan(rps_schedule[0])
