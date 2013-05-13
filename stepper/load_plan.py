@@ -21,15 +21,15 @@ def normalize_time(duration, multiplier):
         return int(duration)
 
 
-class ConstLoadPlan(object):
+class Const(object):
     '''Load plan with constant load'''
 
     TEMPLATE = re.compile('(\d+),\s*(\d+)([dhms])')
 
     @staticmethod
     def create(config):
-        rps, duration, multiplier = ConstLoadPlan.TEMPLATE.search(config).groups()
-        return ConstLoadPlan(int(rps), normalize_time(duration, multiplier))
+        rps, duration, multiplier = Const.TEMPLATE.search(config).groups()
+        return Const(int(rps), normalize_time(duration, multiplier))
 
     def __init__(self, rps, duration):
         self.rps = rps
@@ -51,15 +51,15 @@ class ConstLoadPlan(object):
         self.duration
 
 
-class LineLoadPlan(object):
+class Line(object):
     '''Load plan with linear load'''
 
     TEMPLATE = re.compile('(\d+),\s*(\d+),\s*(\d+)([dhms])')
 
     @staticmethod
     def create(config):
-        minrps, maxrps, duration, multiplier = LineLoadPlan.TEMPLATE.search(config).groups()
-        return LineLoadPlan(int(minrps), int(maxrps), normalize_time(duration, multiplier))
+        minrps, maxrps, duration, multiplier = Line.TEMPLATE.search(config).groups()
+        return Line(int(minrps), int(maxrps), normalize_time(duration, multiplier))
 
     def __init__(self, minrps, maxrps, duration):
         self.minrps = minrps
@@ -96,7 +96,7 @@ class LineLoadPlan(object):
         self.duration
 
 
-class CompositeLoadPlan(object):
+class Composite(object):
     '''Load plan with multiple steps'''
     def __init__(self, steps):
         self.steps = steps
@@ -112,8 +112,8 @@ class CompositeLoadPlan(object):
         return sum(step.duration for step in self.steps)
 
 PLANS = {
-    'line': LineLoadPlan,
-    'const': ConstLoadPlan,
+    'line': Line,
+    'const': Const,
 }
 
 
@@ -128,6 +128,6 @@ def create_load_plan(config):
 def create(rps_schedule):
     '''Load Plan factory method'''
     if len(rps_schedule) > 1:
-        return CompositeLoadPlan([create_load_plan(config) for config in rps_schedule])
+        return Composite([create_load_plan(config) for config in rps_schedule])
     else:
         return create_load_plan(rps_schedule[0])

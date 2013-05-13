@@ -46,6 +46,5 @@ class AmmoFileReader(object):
                 fields = chunk_header.split()
                 chunk_size = int(fields[0])
                 marker = fields[1] if len(fields) > 1 else None
-                chunk_size = int(chunk_header)
                 yield (ammo_file.read(chunk_size), marker)
                 chunk_header = self.ammo_file.readline()
