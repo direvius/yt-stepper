@@ -13,6 +13,8 @@ class Const(object):
         self.duration = duration
 
     def __iter__(self):
+        if self.rps == 0:
+            return iter([])
         interval = 1000000 / self.rps
         return (i * interval for i in xrange(0, self.rps * self.duration))
 
@@ -23,9 +25,9 @@ class Const(object):
         else:
             return 0
 
-    def duration(self):
+    def get_duration(self):
         '''Return step duration'''
-        self.duration
+        return self.duration
 
 
 class Line(object):
@@ -60,9 +62,9 @@ class Line(object):
         else:
             return 0
 
-    def duration(self):
+    def get_duration(self):
         '''Return step duration'''
-        self.duration
+        return self.duration
 
 
 class Composite(object):
@@ -75,10 +77,20 @@ class Composite(object):
         for step in self.steps:
             for ts in step:
                 yield ts + base
-            base += step.duration * 1000000
+            base += step.get_duration() * 1000000
 
-    def duration(self):
-        return sum(step.duration for step in self.steps)
+    def get_duration(self):
+        return sum(step.get_duration() for step in self.steps)
+
+
+class Stepped(Composite):
+    def __init__(self, minrps, maxrps, increment, duration):
+        n_steps = (maxrps - minrps) / increment
+        steps = [
+            Const(minrps + i * increment, duration)
+            for i in xrange(1, n_steps)
+        ]
+        super(Stepped, self).__init__(steps)
 
 
 class StepFactory(object):
@@ -96,10 +108,17 @@ class StepFactory(object):
         return Const(int(rps), parse_duration(duration))
 
     @staticmethod
+    def stepped(params):
+        template = re.compile('(\d+),\s*(\d+),\s*(\d+),\s*(\d+[dhms]?)+\)')
+        minrps, maxrps, increment, duration = template.search(params).groups()
+        return Stepped(int(minrps), int(maxrps), int(increment), parse_duration(duration))
+
+    @staticmethod
     def produce(step_config):
         _plans = {
             'line': StepFactory.line,
             'const': StepFactory.const,
+            'step': StepFactory.stepped,
         }
         load_type, params = step_config.split('(')
         if load_type in _plans:
