@@ -5,7 +5,7 @@ import stepper.format as f
 class Config:
     def __init__(self):
         # per-shoot params
-        self.rps_schedule = ['const(1,3m)', 'line(1,10,2m)']
+        self.rps_schedule = ['const(1,3m3s)', 'line(1,10,2m)']
         self.http_ver = '1.0'
         self.ammo_file = None
         self.instances_schedule = ''

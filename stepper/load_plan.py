@@ -3,34 +3,11 @@ Load Plan generators
 '''
 import math
 import re
-
-MULTIPLIERS = {
-    'h': 3600,
-    'm': 60,
-    's': 1,
-}
-
-
-def normalize_time(duration, multiplier):
-    if multiplier:
-        if multiplier in MULTIPLIERS:
-            return int(duration) * MULTIPLIERS[multiplier]
-        else:
-            raise RuntimeError('No such multiplier: %s', multiplier)
-    else:
-        return int(duration)
+from util import parse_duration
 
 
 class Const(object):
     '''Load plan with constant load'''
-
-    TEMPLATE = re.compile('(\d+),\s*(\d+)([dhms])')
-
-    @staticmethod
-    def create(config):
-        rps, duration, multiplier = Const.TEMPLATE.search(config).groups()
-        return Const(int(rps), normalize_time(duration, multiplier))
-
     def __init__(self, rps, duration):
         self.rps = rps
         self.duration = duration
@@ -53,14 +30,6 @@ class Const(object):
 
 class Line(object):
     '''Load plan with linear load'''
-
-    TEMPLATE = re.compile('(\d+),\s*(\d+),\s*(\d+)([dhms])')
-
-    @staticmethod
-    def create(config):
-        minrps, maxrps, duration, multiplier = Line.TEMPLATE.search(config).groups()
-        return Line(int(minrps), int(maxrps), normalize_time(duration, multiplier))
-
     def __init__(self, minrps, maxrps, duration):
         self.minrps = minrps
         self.maxrps = maxrps
@@ -111,23 +80,37 @@ class Composite(object):
     def duration(self):
         return sum(step.duration for step in self.steps)
 
-PLANS = {
-    'line': Line,
-    'const': Const,
-}
 
+class StepFactory(object):
 
-def create_load_plan(config):
-    load_type, params = config.split('(')
-    if load_type in PLANS:
-        return PLANS[load_type].create(params)
-    else:
-        raise NotImplemented('No such load type implemented: %s', load_type)
+    @staticmethod
+    def line(params):
+        template = re.compile('(\d+),\s*(\d+),\s*(\d+[dhms]?)+\)')
+        minrps, maxrps, duration = template.search(params).groups()
+        return Line(int(minrps), int(maxrps), parse_duration(duration))
+
+    @staticmethod
+    def const(params):
+        template = re.compile('(\d+),\s*(\d+[dhms]?)+\)')
+        rps, duration = template.search(params).groups()
+        return Const(int(rps), parse_duration(duration))
+
+    @staticmethod
+    def produce(step_config):
+        _plans = {
+            'line': StepFactory.line,
+            'const': StepFactory.const,
+        }
+        load_type, params = step_config.split('(')
+        if load_type in _plans:
+            return _plans[load_type](params)
+        else:
+            raise NotImplemented('No such load type implemented: %s', load_type)
 
 
 def create(rps_schedule):
     '''Load Plan factory method'''
     if len(rps_schedule) > 1:
-        return Composite([create_load_plan(config) for config in rps_schedule])
+        return Composite([StepFactory.produce(step_config) for step_config in rps_schedule])
     else:
-        return create_load_plan(rps_schedule[0])
+        return StepFactory.produce(rps_schedule[0])
