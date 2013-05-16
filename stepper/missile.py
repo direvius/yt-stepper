@@ -5,10 +5,10 @@ from itertools import cycle
 
 
 class HttpAmmo(object):
-    def __init__(self, uri, headers, method='GET'):
+    def __init__(self, uri, headers, method='GET', http_ver='1.1'):
         self.method = method
         self.uri = uri
-        self.proto = "HTTP/1.1"
+        self.proto = 'HTTP/%s' % http_ver
         self.headers = headers
         self.body = []
 
@@ -27,8 +27,8 @@ class SimpleGenerator(object):
 
 class UriStyleGenerator(object):
     '''Generates GET ammo based on given URI list'''
-    def __init__(self, uris, headers):
-        self.missiles = cycle([(HttpAmmo(uri, headers).to_s(), None) for uri in uris])
+    def __init__(self, uris, headers, http_ver='1.1'):
+        self.missiles = cycle([(HttpAmmo(uri, headers, http_ver).to_s(), None) for uri in uris])
 
     def __iter__(self):
         return self.missiles

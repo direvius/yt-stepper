@@ -25,3 +25,6 @@ class Factory(object):
 
     def __iter__(self):
         return ((timestamp, marker or self.marker(missile), missile) for timestamp, (missile, marker) in izip(self.load_plan, self.missile_generator))
+
+    def __len__(self):
+        return len(self.load_plan)

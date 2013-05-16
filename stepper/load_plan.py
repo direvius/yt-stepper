@@ -29,7 +29,7 @@ class Const(object):
         '''Return step duration'''
         return self.duration
 
-    def get_total_count(self):
+    def __len__(self):
         '''Return total ammo count'''
         return self.duration * self.rps
 
@@ -63,7 +63,7 @@ class Line(object):
         ''' Find ammo count given the time '''
         def number(t):
             return int(k * (t ** 2) / 2 + (k / 2 + self.minrps) * self.duration)
-        return (timestamp(n) for n in xrange(0, self.get_ammo_count()))
+        return (timestamp(n) for n in xrange(0, self.__len__()))
 
     def rps_at(self, t):
         '''Return rps for second t'''
@@ -76,7 +76,7 @@ class Line(object):
         '''Return step duration'''
         return self.duration
 
-    def get_ammo_count(self):
+    def __len__(self):
         '''Return total ammo count'''
         return int(self.k * (self.duration ** 2) / 2 + (self.k / 2 + self.minrps) * self.duration)
 
@@ -94,7 +94,12 @@ class Composite(object):
             base += step.get_duration() * 1000000
 
     def get_duration(self):
+        '''Return total duration'''
         return sum(step.get_duration() for step in self.steps)
+
+    def __len__(self):
+        '''Return total ammo count'''
+        return sum(step.__len__() for step in self.steps)
 
 
 class Stepped(Composite):
