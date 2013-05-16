@@ -29,6 +29,10 @@ class Const(object):
         '''Return step duration'''
         return self.duration
 
+    def get_total_count(self):
+        '''Return total ammo count'''
+        return self.duration * self.rps
+
 
 class Line(object):
     '''Load plan with linear load'''
@@ -36,10 +40,16 @@ class Line(object):
         self.minrps = minrps
         self.maxrps = maxrps
         self.duration = duration
+        self.k = float(self.maxrps - self.minrps) / self.duration
+        self.b = 1 + 2 * self.minrps / self.k
 
     def __iter__(self):
-        k = float(self.maxrps - self.minrps) / self.duration
-        b = 1 + 2 * self.minrps / k
+        k = self.k
+        b = self.b
+
+        #FIXME: does not work for negative k (minrps > maxrps)
+        if k < 0:
+            raise NotImplementedError("We have no support for descending linear load yet")
 
         '''
         Solve equation:
@@ -48,12 +58,12 @@ class Line(object):
         r0 is initial rps.
         '''
         def timestamp(n):
-            return int((math.sqrt(b * b + 8 * n / k) - b) * 500000)  # (sqrt(b^2 + 8 * n / k) - b) / 2 -- time in seconds
+            return int((math.sqrt(b ** 2 + 8 * n / k) - b) * 500000)  # (sqrt(b^2 + 8 * n / k) - b) / 2 -- time in seconds
 
-        ''' Find ammo number given the time '''
+        ''' Find ammo count given the time '''
         def number(t):
             return int(k * (t ** 2) / 2 + (k / 2 + self.minrps) * self.duration)
-        return (timestamp(n) for n in xrange(0, number(self.duration)))
+        return (timestamp(n) for n in xrange(0, self.get_ammo_count()))
 
     def rps_at(self, t):
         '''Return rps for second t'''
@@ -65,6 +75,10 @@ class Line(object):
     def get_duration(self):
         '''Return step duration'''
         return self.duration
+
+    def get_ammo_count(self):
+        '''Return total ammo count'''
+        return int(self.k * (self.duration ** 2) / 2 + (self.k / 2 + self.minrps) * self.duration)
 
 
 class Composite(object):
@@ -85,10 +99,12 @@ class Composite(object):
 
 class Stepped(Composite):
     def __init__(self, minrps, maxrps, increment, duration):
+        if maxrps < minrps:
+            increment = -increment
         n_steps = (maxrps - minrps) / increment
         steps = [
             Const(minrps + i * increment, duration)
-            for i in xrange(1, n_steps)
+            for i in xrange(0, n_steps + 1)
         ]
         super(Stepped, self).__init__(steps)
 
