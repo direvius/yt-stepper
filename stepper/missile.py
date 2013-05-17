@@ -36,8 +36,10 @@ class UriStyleGenerator(object):
 
 class AmmoFileReader(object):
     '''Read missiles from ammo file'''
-    def __init__(self, filename):
+    def __init__(self, filename, loop_limit=0):
         self.filename = filename
+        self.loops = 0
+        self.loop_limit = loop_limit
 
     def __iter__(self):
         with open(self.filename, 'rb') as ammo_file:
@@ -48,3 +50,7 @@ class AmmoFileReader(object):
                 marker = fields[1] if len(fields) > 1 else None
                 yield (ammo_file.read(chunk_size), marker)
                 chunk_header = self.ammo_file.readline()
+                if not chunk_header and (self.loops < self.loop_limit or self.loop_limit == 0):
+                    self.loops += 1
+                    ammo_file.seek(0)
+                    chunk_header = ammo_file.readline()

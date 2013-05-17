@@ -1,4 +1,4 @@
-import stepper.ammo as ammo
+import stepper.stepper as stepper
 import stepper.format as f
 import matplotlib.pyplot as plt
 import numpy as np
@@ -49,4 +49,4 @@ def test_lp():
     plt.savefig("load.png")
     plt.close()
 
-list(f.Stpd(progress(ammo.Factory(Config()), 'Ammo: ')))
+list(f.Stpd(progress(stepper.AmmoFactory(Config()), 'Ammo: ')))
