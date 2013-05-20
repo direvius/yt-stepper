@@ -32,3 +32,6 @@ class AmmoFactory(object):
     def __len__(self):
         #FIXME: what if we have limits set?
         return len(self.load_plan)
+
+    def loop_count(self):
+        return self.missile_generator.loop_count()

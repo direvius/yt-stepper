@@ -11,6 +11,7 @@ class HttpAmmo(object):
         self.proto = 'HTTP/%s' % http_ver
         self.headers = headers
         self.body = []
+        self.loops = 0
 
     def to_s(self):
         return "%s %s %s\n%s" % (self.method, self.uri, self.proto, '\n'.join(self.headers))
@@ -22,19 +23,29 @@ class SimpleGenerator(object):
         self.missiles = cycle([(missile_sample.to_s(), None)])
 
     def __iter__(self):
-        return self.missiles
+        self.loops += 1
+        yield self.missiles.next()
+
+    def loop_count(self):
+        return self.loops
 
 
-class UriStyleGenerator(object):
+class UriStyleGenerator(SimpleGenerator):
     '''Generates GET ammo based on given URI list'''
     def __init__(self, uris, headers, http_ver='1.1'):
+        self.ammo_number = 0
+        self.uri_count = len(uris)
         self.missiles = cycle([(HttpAmmo(uri, headers, http_ver).to_s(), None) for uri in uris])
 
     def __iter__(self):
-        return self.missiles
+        self.ammo_number += 1
+        yield self.missiles.next()
+
+    def loop_count(self):
+        return self.ammo_number / self.uri_count
 
 
-class AmmoFileReader(object):
+class AmmoFileReader(SimpleGenerator):
     '''Read missiles from ammo file'''
     def __init__(self, filename, loop_limit=0):
         self.filename = filename
