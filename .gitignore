@@ -36,4 +36,4 @@ nosetests.xml
 
 # generated ammo
 ammo
-ammo.txt
+ammo.stpd

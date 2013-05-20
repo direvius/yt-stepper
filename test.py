@@ -51,5 +51,5 @@ def test_lp():
     plt.savefig("load.png")
     plt.close()
 
-with open('ammo.txt', 'w') as f:
+with open('ammo.stpd', 'w') as f:
     stepper.Stepper(Config()).write(f)
