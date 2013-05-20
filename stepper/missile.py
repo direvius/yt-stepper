@@ -23,8 +23,9 @@ class SimpleGenerator(object):
         self.missiles = cycle([(missile_sample.to_s(), None)])
 
     def __iter__(self):
-        self.loops += 1
-        yield self.missiles.next()
+        for m in self.missiles:
+            self.loops += 1
+            yield m
 
     def loop_count(self):
         return self.loops
@@ -32,14 +33,19 @@ class SimpleGenerator(object):
 
 class UriStyleGenerator(SimpleGenerator):
     '''Generates GET ammo based on given URI list'''
-    def __init__(self, uris, headers, http_ver='1.1'):
+    def __init__(self, uris, headers, loop_limit=0, http_ver='1.1'):
         self.ammo_number = 0
+        self.loop_limit = loop_limit
         self.uri_count = len(uris)
         self.missiles = cycle([(HttpAmmo(uri, headers, http_ver).to_s(), None) for uri in uris])
 
     def __iter__(self):
-        self.ammo_number += 1
-        yield self.missiles.next()
+        for m in self.missiles:
+            self.ammo_number += 1
+            if self.loop_limit and self.loop_count() > self.loop_limit:
+                raise StopIteration
+            else:
+                yield m
 
     def loop_count(self):
         return self.ammo_number / self.uri_count
@@ -60,7 +66,7 @@ class AmmoFileReader(SimpleGenerator):
                 chunk_size = int(fields[0])
                 marker = fields[1] if len(fields) > 1 else None
                 yield (ammo_file.read(chunk_size), marker)
-                chunk_header = self.ammo_file.readline()
+                chunk_header = ammo_file.readline()
                 if not chunk_header and (self.loops < self.loop_limit or self.loop_limit == 0):
                     self.loops += 1
                     ammo_file.seek(0)

@@ -1,5 +1,4 @@
 import stepper.stepper as stepper
-import stepper.format as f
 import matplotlib.pyplot as plt
 import numpy as np
 from stepper.info import progress
@@ -14,11 +13,14 @@ class Config:
             #'step(100, 10, 10, 1m)',
         ]
         self.http_ver = '1.0'
-        self.ammo_file = None
+        self.ammo_file = 'ammo'
         self.instances_schedule = ''
         self.loop_limit = None
         self.ammo_limit = None
-        self.uris = ['/', '/list']
+        self.uris = [
+            #'/',
+            #'/list',
+        ]
         self.headers = ['Host: www.yandex.ru']
         self.autocases = 0
         self.use_caching = True
@@ -49,4 +51,5 @@ def test_lp():
     plt.savefig("load.png")
     plt.close()
 
-list(f.Stpd(progress(stepper.AmmoFactory(Config()), 'Ammo: ')))
+with open('ammo.txt', 'w') as f:
+    stepper.Stepper(Config()).write(f)
