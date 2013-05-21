@@ -3,6 +3,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 from stepper.info import progress
 
+#TODO: instances_schedule
+# ammo without timestamp
+
+#TODO: descending linear load
+
+#TODO: error messages
+
+#TODO: logging
+
+#TODO: stepper results
+
+#TODO: fractional load
+# use float for parameters
+
 
 class Config:
     def __init__(self):

@@ -102,7 +102,7 @@ class Composite(object):
         return sum(step.__len__() for step in self.steps)
 
 
-class Stepped(Composite):
+class Stairway(Composite):
     def __init__(self, minrps, maxrps, increment, duration):
         if maxrps < minrps:
             increment = -increment
@@ -111,7 +111,7 @@ class Stepped(Composite):
             Const(minrps + i * increment, duration)
             for i in xrange(0, n_steps + 1)
         ]
-        super(Stepped, self).__init__(steps)
+        super(Stairway, self).__init__(steps)
 
 
 class StepFactory(object):
@@ -129,17 +129,17 @@ class StepFactory(object):
         return Const(int(rps), parse_duration(duration))
 
     @staticmethod
-    def stepped(params):
+    def stairway(params):
         template = re.compile('(\d+),\s*(\d+),\s*(\d+),\s*(\d+[dhms]?)+\)')
         minrps, maxrps, increment, duration = template.search(params).groups()
-        return Stepped(int(minrps), int(maxrps), int(increment), parse_duration(duration))
+        return Stairway(int(minrps), int(maxrps), int(increment), parse_duration(duration))
 
     @staticmethod
     def produce(step_config):
         _plans = {
             'line': StepFactory.line,
             'const': StepFactory.const,
-            'step': StepFactory.stepped,
+            'step': StepFactory.stairway,
         }
         load_type, params = step_config.split('(')
         if load_type in _plans:
