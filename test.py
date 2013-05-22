@@ -22,8 +22,8 @@ class Config:
     def __init__(self):
         # per-shoot params
         self.rps_schedule = [
-            #'const(5, 10)',
-            'line(1, 5000, 10m)',
+            'const(10, 2m)',
+            #'line(1, 5000, 10m)',
             #'step(100, 10, 10, 1m)',
         ]
         self.http_ver = '1.0'
