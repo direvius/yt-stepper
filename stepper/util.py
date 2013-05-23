@@ -2,6 +2,7 @@
 Utilities: parsers, converters, etc.
 '''
 import re
+from itertools import islice
 
 
 def parse_duration(duration):
@@ -25,3 +26,18 @@ def parse_duration(duration):
             return int(time)
 
     return sum(parse_token(*token) for token in _re_token.findall(duration))
+
+
+class Limiter(object):
+    def __init__(self, gen, limit):
+        self.limit = limit or 0
+        if not limit:
+            self.gen = gen
+        else:
+            self.gen = islice(gen, limit)
+
+    def __len__(self):
+        return self.limit
+
+    def __iter__(self):
+        return (item for item in self.gen)
