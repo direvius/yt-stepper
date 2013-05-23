@@ -1,8 +1,7 @@
-import stepper.stepper as stepper
+from stepper import Stepper, ComponentFactory
 import matplotlib.pyplot as plt
 import numpy as np
 from stepper.info import progress
-from stepper.config import ComponentFactory
 
 #TODO: instances_schedule
 
@@ -60,4 +59,4 @@ def test_lp():
     plt.close()
 
 with open('ammo.stpd', 'w') as f:
-    stepper.Stepper(cft).write(f)
+    Stepper(cft).write(f)

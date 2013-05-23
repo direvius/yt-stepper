@@ -3,6 +3,7 @@ Utilities: parsers, converters, etc.
 '''
 import re
 from itertools import islice
+from exceptions import StepperConfigurationError
 
 
 def parse_duration(duration):
@@ -21,7 +22,7 @@ def parse_duration(duration):
             if multiplier in multipliers:
                 return int(time) * multipliers[multiplier]
             else:
-                raise RuntimeError('No such multiplier: %s', multiplier)
+                raise StepperConfigurationError('Failed to parse duration: %s' % duration)
         else:
             return int(time)
 
