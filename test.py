@@ -1,7 +1,4 @@
-from stepper import Stepper, ComponentFactory
-import matplotlib.pyplot as plt
-import numpy as np
-from stepper.info import progress
+from stepper import Stepper
 
 #TODO: instances_schedule
 
@@ -15,27 +12,32 @@ from stepper.info import progress
 # use float for parameters
 
 
-cft = ComponentFactory(
-    rps_schedule=[
-        'const(10, 2m)',
-        #'line(1, 5000, 10m)',
-        #'step(100, 10, 10, 1m)',
-    ],
-    http_ver='1.0',
-    ammo_file='ammo',
-    instances_schedule='',
-    loop_limit=None,
-    ammo_limit=None,
-    uris=[
-        #'/',
-        #'/list',
-    ],
-    headers=['Host: www.yandex.ru'],
-    autocases='uri',
-)
-
-
 def test_lp():
+
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from stepper.info import progress
+    from stepper.config import ComponentFactory
+
+    cft = ComponentFactory(
+        rps_schedule=[
+            'const(10, 2m)',
+            #'line(1, 5000, 10m)',
+            #'step(100, 10, 10, 1m)',
+        ],
+        http_ver='1.0',
+        ammo_file='ammo',
+        instances_schedule='',
+        loop_limit=None,
+        ammo_limit=None,
+        uris=[
+            #'/',
+            #'/list',
+        ],
+        headers=['Host: www.yandex.ru'],
+        autocases='uri',
+    )
+
     ts = list(progress(cft.get_load_plan()))
     #rps = [(ts[i], len(list(itt.takewhile(lambda x: x < ts[i] + 1000000, ts[i:])))) for i in xrange(0, len(ts))]
     rps = []
@@ -59,4 +61,21 @@ def test_lp():
     plt.close()
 
 with open('ammo.stpd', 'w') as f:
-    Stepper(cft).write(f)
+    Stepper(
+        rps_schedule=[
+            'const(10, 2m)',
+            #'line(1, 5000, 10m)',
+            #'step(100, 10, 10, 1m)',
+        ],
+        http_ver='1.0',
+        ammo_file='ammo',
+        instances_schedule='',
+        loop_limit=None,
+        ammo_limit=None,
+        uris=[
+            #'/',
+            #'/list',
+        ],
+        headers=['Host: www.yandex.ru'],
+        autocases='uri',
+    ).write(f)

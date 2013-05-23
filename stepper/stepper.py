@@ -1,6 +1,7 @@
 from itertools import izip
 import format as fmt
 from info import progress
+from config import ComponentFactory
 
 
 class AmmoFactory(object):
@@ -30,8 +31,8 @@ class AmmoFactory(object):
 
 
 class Stepper(object):
-    def __init__(self, config):
-        self.ammo = fmt.Stpd(progress(AmmoFactory(config), 'Ammo: '))
+    def __init__(self, **kwargs):
+        self.ammo = fmt.Stpd(progress(AmmoFactory(ComponentFactory(**kwargs)), 'Ammo: '))
 
     def write(self, f):
         for missile in self.ammo:
