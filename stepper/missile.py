@@ -2,6 +2,7 @@
 Missile generator
 '''
 from itertools import cycle
+from exceptions import AmmoFileError
 
 
 class HttpAmmo(object):
@@ -62,10 +63,16 @@ class AmmoFileReader(SimpleGenerator):
         with open(self.filename, 'rb') as ammo_file:
             chunk_header = ammo_file.readline()
             while chunk_header:
-                fields = chunk_header.split()
-                chunk_size = int(fields[0])
-                marker = fields[1] if len(fields) > 1 else None
-                yield (ammo_file.read(chunk_size), marker)
+                try:
+                    fields = chunk_header.split()
+                    chunk_size = int(fields[0])
+                    marker = fields[1] if len(fields) > 1 else None
+                    missile = ammo_file.read(chunk_size)
+                    if len(missile) < chunk_size:
+                        raise AmmoFileError("Unexpected end of file: read %s bytes instead of %s" % (len(missile), chunk_size))
+                    yield (missile, marker)
+                except (IndexError, ValueError):
+                    raise AmmoFileError("Error while reading ammo file. Position: %s, header: '%s'" % (ammo_file.tell(), chunk_header))
                 chunk_header = ammo_file.readline()
                 if not chunk_header and (self.loops < self.loop_limit or self.loop_limit == 0):
                     self.loops += 1

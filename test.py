@@ -5,11 +5,8 @@ from stepper.info import progress
 from stepper.config import ComponentFactory
 
 #TODO: instances_schedule
-# ammo without timestamp
 
 #TODO: descending linear load
-
-#TODO: error messages
 
 #TODO: logging
 
@@ -35,7 +32,7 @@ cft = ComponentFactory(
         #'/list',
     ],
     headers=['Host: www.yandex.ru'],
-    autocases='uniq',
+    autocases='uri',
 )
 
 

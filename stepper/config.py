@@ -5,9 +5,14 @@ import util
 from uuid import uuid4
 
 
+def mark_by_uri(missile):
+    return missile.split('\n', 1)[0].split(' ', 2)[1].split('?', 1)[0]
+
+
 class ComponentFactory():
     markers = {
         'uniq': lambda m: uuid4().hex,
+        'uri': mark_by_uri,
     }
 
     def __init__(
