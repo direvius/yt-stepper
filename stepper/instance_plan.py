@@ -1,5 +1,5 @@
 from itertools import cycle
-from util import parse_duration
+#from util import parse_duration
 
 
 class Empty(object):

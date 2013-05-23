@@ -1,31 +1,13 @@
-
-import missile
-import load_plan as lp
-from itertools import izip, islice
+from itertools import izip
 import format as fmt
 from info import progress
 
 
-class StepperConfigurationError(Exception):
-    '''
-    Raised when error in stepper configuration found.
-    '''
-
-
 class AmmoFactory(object):
     '''Link generators, filters and markers together'''
-    def __init__(self, config):
-        self.load_plan = lp.create(config.rps_schedule)
-        self.ammo_limit = config.ammo_limit
-        loop_limit = config.loop_limit or 0
-        if len(config.uris):
-            self.missile_generator = missile.UriStyleGenerator(config.uris, config.headers, loop_limit=loop_limit)
-        elif config.ammo_file:
-            self.missile_generator = missile.AmmoFileReader(config.ammo_file, loop_limit)
-        else:
-            raise StepperConfigurationError('Neither URIs nor ammo file found')
-        if self.ammo_limit:
-            self.missile_generator = islice(self.missile_generator, config.ammo_limit)
+    def __init__(self, factory):
+        self.load_plan = factory.get_load_plan()
+        self.missile_generator = factory.get_ammo_generator()
         self.filter = lambda missile: True
         self.marker = lambda missile: "None"
 

@@ -2,6 +2,7 @@ import stepper.stepper as stepper
 import matplotlib.pyplot as plt
 import numpy as np
 from stepper.info import progress
+from config import ComponentFactory
 
 #TODO: instances_schedule
 # ammo without timestamp
@@ -66,4 +67,22 @@ def test_lp():
     plt.close()
 
 with open('ammo.stpd', 'w') as f:
-    stepper.Stepper(Config()).write(f)
+    cft = ComponentFactory(
+        rps_schedule=[
+            'const(10, 2m)',
+            #'line(1, 5000, 10m)',
+            #'step(100, 10, 10, 1m)',
+        ],
+        http_ver='1.0',
+        ammo_file='ammo',
+        instances_schedule='',
+        loop_limit=None,
+        ammo_limit=None,
+        uris=[
+            #'/',
+            #'/list',
+        ],
+        headers=['Host: www.yandex.ru'],
+        autocases=0,
+    )
+    stepper.Stepper(cft).write(f)
